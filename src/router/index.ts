@@ -27,6 +27,10 @@ const routes: Array<RouteConfig> = [
     path: "/prerequisites",
     component: () => import("../views/Prerequisites.vue"),
   },
+  {
+    path: "/planner",
+    component: () => import("../views/DegreePlanner.vue"),
+  },
 ];
 
 const router = new VueRouter({
