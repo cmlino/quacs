@@ -19,6 +19,19 @@ fi
 # Update our local dependencies (quacs-rs), or clone if possible
 echo Retrieving latest quacs-data
 git -C src/store/data pull || git clone https://github.com/quacs/quacs-data src/store/data
-ln -srf ./src/store/data ./src/quacs-rs/src/
-cd src/quacs-rs/
-wasm-pack build $FLAGS && mv pkg/* .
+
+ROOT_DIR=$(pwd)
+
+for dir in $ROOT_DIR/src/store/data/semester_data/*; do
+	SEM_NAME=$(basename $dir)
+	echo Building $SEM_NAME
+	rm -f $ROOT_DIR/src/quacs-rs/src/data
+	ln -srf $dir $ROOT_DIR/src/quacs-rs/src/data
+
+	cd $ROOT_DIR/src/quacs-rs/
+	wasm-pack build $FLAGS || exit 1
+
+	mkdir $ROOT_DIR/src/quacs-rs/$SEM_NAME
+	mv pkg/* $ROOT_DIR/src/quacs-rs/$SEM_NAME
+	echo
+done

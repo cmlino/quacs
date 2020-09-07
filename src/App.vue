@@ -27,13 +27,24 @@
           <b-navbar-nav class="ml-auto">
             <b-navbar-nav>
               <CourseSetEdit></CourseSetEdit>
-              <b-nav-item
-                to="#"
-                class="nav-text text-nowrap"
-                v-b-tooltip.hover
-                title="Multiple semester support coming soon!"
-                >Fall 2020</b-nav-item
+              <b-nav-item-dropdown
+                left
+                title="Set semester"
+                boundary="viewport"
+                menu-class="semester-dropdown"
               >
+                <template v-slot:button-content>
+                  <em class="nav-text" style="font-style: normal;">{{
+                    semesterToLongName(currentSemester)
+                  }}</em>
+                </template>
+                <b-dropdown-item
+                  v-for="shortSem of semesterShortNames"
+                  :key="shortSem"
+                  @click="switchToSemester(shortSem)"
+                  >{{ semesterToLongName(shortSem) }}</b-dropdown-item
+                >
+              </b-nav-item-dropdown>
               <b-nav-item class="nav-text desktop-only" disabled>|</b-nav-item>
               <b-nav-item
                 to="/prerequisites"
@@ -152,6 +163,10 @@ import {
 import Settings from "@/components/Settings.vue";
 import CourseSetEdit from "@/components/CourseSetEdit.vue";
 
+// This is a compile-time generated variable
+// eslint-disable-next-line
+declare const SEMESTERS: number[];
+
 @Component({
   components: {
     Settings,
@@ -268,11 +283,49 @@ export default class App extends Vue {
       });
     }
   }
+
+  semesterToLongName(semShortName: number): string {
+    const sem = semShortName.toString();
+
+    let term = "";
+    switch (sem.substring(4, 6)) {
+      case "01":
+        term = "Spring";
+        break;
+      case "05":
+        term = "Summer";
+        break;
+      case "09":
+        term = "Fall";
+        break;
+      default:
+        break;
+    }
+
+    return `${term} ${sem.substring(0, 4)}`;
+  }
+
+  get semesterShortNames(): number[] {
+    return SEMESTERS;
+  }
+
+  switchToSemester(sem: number): undefined {
+    this.$store.dispatch("schedule/switchToSemester", sem);
+  }
+
+  get currentSemester(): number {
+    return this.$store.state.schedule.currentTerm;
+  }
 }
 </script>
 
 <style>
 @import "./assets/styles/main.css";
+
+.semester-dropdown {
+  max-height: 30rem;
+  overflow: scroll;
+}
 
 .footer {
   display: flex;

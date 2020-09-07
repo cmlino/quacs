@@ -60,14 +60,17 @@ import { setColorTheme } from "./utilities";
 
 Vue.config.productionTip = false;
 
+// This is a compile-time generated variable
+// eslint-disable-next-line
+declare const SEMESTERS: number[];
+
 new Vue({
   router,
   store,
   render: (h) => h(App),
   beforeCreate() {
-    this.$store.dispatch("init");
+    this.$store.dispatch("init", SEMESTERS[0]);
     this.$store.commit("schedule/initializeStore");
-    this.$store.dispatch("schedule/init");
   },
   mounted() {
     setColorTheme(this.$store.state.settings.colorTheme);

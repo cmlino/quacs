@@ -1,9 +1,4 @@
-import {
-  CatalogCourse,
-  CourseSize,
-  Department,
-  PrerequisiteJSON,
-} from "@/typings";
+import { CatalogCourse, Department, PrerequisiteJSON } from "@/typings";
 
 import axios from "axios";
 import createPersistedState from "vuex-persistedstate";
@@ -12,7 +7,6 @@ import Vue from "vue";
 import VueAxios from "vue-axios";
 import Vuex from "vuex";
 
-import SCHOOLS_JSON from "./data/schools.json";
 import DATA_STATS_JSON from "./data/meta.json";
 
 import settings from "./modules/settings";
@@ -22,17 +16,24 @@ import schedule from "./modules/schedule";
 Vue.use(Vuex);
 Vue.use(VueAxios, axios);
 
+// This is a compile-time generated variable
+// eslint-disable-next-line
+declare const SEMESTERS: number[];
+
 export default new Vuex.Store({
   state: {
-    schools: SCHOOLS_JSON as { [id: string]: { code: string; name: string }[] },
+    schools: [] as {
+      name: string;
+      depts: { code: string; name: string }[];
+    }[], // asynchronously loaded
     dataStats: DATA_STATS_JSON as { last_updated: string },
     departments: [] as Department[], // asynchronously loaded
     catalog: {} as { [id: string]: CatalogCourse }, // asynchronously loaded
     prerequisitesData: {} as { [id: string]: PrerequisiteJSON }, // asynchronously loaded
-    courseSizes: {} as { [id: string]: CourseSize },
     lastNewSchedule: 0,
     warningMessage: "",
     updateAvailable: false,
+    currentTerm: SEMESTERS[0],
   },
   getters: {
     shouldShowAlert: (state) => {
@@ -56,8 +57,8 @@ export default new Vuex.Store({
     },
   },
   mutations: {
-    SET_COURSE_SIZES(state, courseSizes): void {
-      state.courseSizes = courseSizes;
+    SET_SCHOOLS(state, schools): void {
+      state.schools = schools;
     },
 
     SET_DEPARTMENTS(state, departments): void {
@@ -81,52 +82,28 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    loadCourseSizes({ commit }): void {
-      //TODO switch to better server for this over a free herokuapp instance
-      axios
-        .get(
-          "https://vast-waters-42287.herokuapp.com/https://sis.rpi.edu/reg/rocs/YACS_202009.xml"
-        )
-        .then((r) => r.data)
-        .then((data) => {
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(data, "text/xml");
+    init({ dispatch, commit }, semester: number): void {
+      const DATA_DIR = `./data/${semester}`;
 
-          const liveData: { [id: string]: CourseSize } = {};
-          const courses = xmlDoc.getElementsByTagName("SECTION");
-          for (let i = 0; i < courses.length; i++) {
-            liveData[courses[i].attributes[0].nodeValue || ""] = {
-              avail: 0,
-              crn: 0,
-              num: 0,
-              seats: 0,
-              students: 0,
-            };
-            for (let j = 0; j < courses[i].attributes.length; j++) {
-              const attribute = courses[i].attributes[j];
-              Vue.set(
-                liveData[courses[i].attributes[0].nodeValue || ""],
-                attribute.nodeName,
-                parseInt(attribute.nodeValue || "-1")
-              );
-            }
-          }
-          commit("SET_COURSE_SIZES", liveData);
-        });
-    },
+      import(`${DATA_DIR}/schools.json`).then((schools) =>
+        commit("SET_SCHOOLS", schools)
+      );
 
-    init({ commit }): void {
-      import("./data/catalog.json").then((catalog) =>
+      import(`${DATA_DIR}/catalog.json`).then((catalog) =>
         commit("SET_CATALOG", catalog)
       );
 
-      import("./data/courses.json").then((departments) =>
+      import(`${DATA_DIR}/courses.json`).then((departments) =>
         commit("SET_DEPARTMENTS", departments.default)
       );
 
-      import("./data/prerequisites.json").then((prereqs) =>
+      import(`${DATA_DIR}/prerequisites.json`).then((prereqs) =>
         commit("SET_PREREQUISITES_DATA", prereqs)
       );
+
+      commit("schedule/initializeStore");
+
+      dispatch("schedule/init", { initWasm: true, semester });
     },
   },
   modules: {

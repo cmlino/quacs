@@ -25,6 +25,10 @@ export interface CourseSection {
 
   cap: number;
   rem: number;
+  wlCap: number;
+  wlAct: number;
+  xlCap: number;
+  xlAct: number;
 
   timeslots: Timeslot[];
   attribute: string;
@@ -51,14 +55,6 @@ export interface CatalogCourse {
   crse: string; // TODO: number?
   coid: string;
   url: string;
-}
-
-export interface CourseSize {
-  avail: number;
-  crn: number;
-  num: number;
-  seats: number;
-  students: number;
 }
 
 /*

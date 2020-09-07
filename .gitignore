@@ -108,8 +108,10 @@ dist
 
 # Quacs Internal Dependencies
 src/store/data/
-src/quacs-rs/target
-src/quacs-rs/src/data
+src/quacs-rs
+!src/quacs-rs/Cargo.toml
+!src/quacs-rs/src
+!src/quacs-rs/LICENSE
 /target
 Cargo.lock
 package.json

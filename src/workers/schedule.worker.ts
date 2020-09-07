@@ -1,8 +1,10 @@
-let wasm: typeof import("@/quacs-rs") | null = null;
+type WASM_TYPE = typeof import("@/quacs-rs/202009");
 
-export const init = async (): Promise<void> => {
+let wasm: WASM_TYPE | null = null;
+
+export const init = async (semester: number): Promise<void> => {
   const start = Date.now();
-  wasm = await import("../quacs-rs");
+  wasm = (await import(`@/quacs-rs/${semester}`)) as WASM_TYPE;
   const end = Date.now();
 
   // eslint-disable-next-line

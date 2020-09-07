@@ -163,10 +163,7 @@ Vue.use(ModalPlugin);
       let emptyCount = 0;
       // @ts-expect-error: no u typescript, this does exist
       for (const section of this.course.sections) {
-        if (
-          this.$store.state.courseSizes[section.crn] &&
-          this.$store.state.courseSizes[section.crn].avail <= 0
-        ) {
+        if (section.rem <= 0) {
           emptyCount++;
         }
       }
