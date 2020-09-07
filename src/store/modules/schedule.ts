@@ -139,7 +139,7 @@ export default class Schedule extends VuexModule {
     if (p.initWasm) {
       // eslint-disable-next-line
       console.log("initializing worker");
-      await worker.init(semester);
+      await worker.init(p.semester);
       // eslint-disable-next-line
       console.log("worker initialized");
     }

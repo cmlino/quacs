@@ -309,7 +309,7 @@ export default class App extends Vue {
     return SEMESTERS;
   }
 
-  switchToSemester(sem: number): undefined {
+  switchToSemester(sem: number): void {
     this.$store.dispatch("schedule/switchToSemester", sem);
   }
 
