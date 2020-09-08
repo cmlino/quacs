@@ -30,6 +30,7 @@ import {
   faPlus,
   faTrash,
   faUser,
+  faUserSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { faDiscord, faGithub } from "@fortawesome/free-brands-svg-icons";
 
@@ -44,6 +45,7 @@ library.add(
   faTrash,
   faExclamationTriangle,
   faUser,
+  faUserSlash,
   faPen,
   faPlus,
   faLaptopHouse,
@@ -58,11 +60,9 @@ import router from "./router";
 import store from "./store";
 import { setColorTheme } from "./utilities";
 
-Vue.config.productionTip = false;
+import SEMESTERS from "@/store/semesters.json";
 
-// This is a compile-time generated variable
-// eslint-disable-next-line
-declare const SEMESTERS: number[];
+Vue.config.productionTip = false;
 
 new Vue({
   router,
@@ -70,10 +70,8 @@ new Vue({
   render: (h) => h(App),
   beforeCreate() {
     this.$store.dispatch("init", SEMESTERS[0]);
-    this.$store.commit("schedule/initializeStore");
   },
   mounted() {
     setColorTheme(this.$store.state.settings.colorTheme);
-    this.$store.dispatch("loadCourseSizes");
   },
 }).$mount("#app");

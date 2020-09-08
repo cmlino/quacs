@@ -12,13 +12,10 @@ import DATA_STATS_JSON from "./data/meta.json";
 import settings from "./modules/settings";
 import prerequisites from "./modules/prerequisites";
 import schedule from "./modules/schedule";
+import SEMESTERS from "@/store/semesters.json";
 
 Vue.use(Vuex);
 Vue.use(VueAxios, axios);
-
-// This is a compile-time generated variable
-// eslint-disable-next-line
-declare const SEMESTERS: number[];
 
 export default new Vuex.Store({
   state: {
@@ -34,6 +31,8 @@ export default new Vuex.Store({
     warningMessage: "",
     updateAvailable: false,
     currentTerm: SEMESTERS[0],
+    CURRENT_STORAGE_VERSION: "0.0.4",
+    storedVersion: "", // If a value is in localstorage, this will be set to that on load
   },
   getters: {
     shouldShowAlert: (state) => {
@@ -80,30 +79,47 @@ export default new Vuex.Store({
     toggleUpdateNotice(state, newValue: boolean): void {
       state.updateAvailable = newValue;
     },
+
+    SET_TERM(state, newValue: number): void {
+      state.currentTerm = newValue;
+    },
   },
   actions: {
-    init({ dispatch, commit }, semester: number): void {
-      const DATA_DIR = `./data/${semester}`;
+    async init({ state, dispatch, commit }, semester: number): Promise<void> {
+      if (state.storedVersion !== state.CURRENT_STORAGE_VERSION) {
+        // eslint-disable-next-line
+        console.log("Out of date or uninitialized sections, clearing");
 
-      import(`${DATA_DIR}/schools.json`).then((schools) =>
-        commit("SET_SCHOOLS", schools)
+        commit("schedule/reInitializeStore");
+      }
+
+      // Load everything before committing it so we can ensure the correct order
+      // of data being updated.
+      // This avoids a race condition.
+      const schools = await import(
+        `./data/semester_data/${semester}/schools.json`
+      );
+      const catalog = await import(
+        `./data/semester_data/${semester}/catalog.json`
+      );
+      const prereqs = await import(
+        `./data/semester_data/${semester}/prerequisites.json`
+      );
+      const departments = await import(
+        `./data/semester_data/${semester}/courses.json`
       );
 
-      import(`${DATA_DIR}/catalog.json`).then((catalog) =>
-        commit("SET_CATALOG", catalog)
-      );
-
-      import(`${DATA_DIR}/courses.json`).then((departments) =>
-        commit("SET_DEPARTMENTS", departments.default)
-      );
-
-      import(`${DATA_DIR}/prerequisites.json`).then((prereqs) =>
-        commit("SET_PREREQUISITES_DATA", prereqs)
-      );
-
-      commit("schedule/initializeStore");
+      commit("SET_SCHOOLS", schools);
+      commit("SET_CATALOG", catalog);
+      commit("SET_PREREQUISITES_DATA", prereqs);
+      commit("SET_DEPARTMENTS", departments.default);
 
       dispatch("schedule/init", { initWasm: true, semester });
+    },
+
+    updateTerm({ commit }, semester: number): void {
+      commit("SET_TERM", semester);
+      commit("schedule/setCurrentTerm", semester);
     },
   },
   modules: {
@@ -114,8 +130,7 @@ export default new Vuex.Store({
   plugins: [
     createPersistedState({
       paths: [
-        "schedule.storedVersion",
-        "schedule.currentTerm",
+        "storedVersion",
         "schedule.currentCourseSet",
         "schedule.courseSets",
         "settings.timePreference",
@@ -125,7 +140,7 @@ export default new Vuex.Store({
         "prerequisites.enableChecking",
       ],
       rehydrated: (store) => {
-        store.commit("schedule/initSelectedSetions");
+        store.commit("schedule/initSelectedSections");
         store.dispatch("schedule/init", false);
       },
     }),

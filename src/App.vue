@@ -162,10 +162,7 @@ import {
 } from "bootstrap-vue";
 import Settings from "@/components/Settings.vue";
 import CourseSetEdit from "@/components/CourseSetEdit.vue";
-
-// This is a compile-time generated variable
-// eslint-disable-next-line
-declare const SEMESTERS: number[];
+import SEMESTERS from "@/store/semesters.json";
 
 @Component({
   components: {
@@ -310,7 +307,7 @@ export default class App extends Vue {
   }
 
   switchToSemester(sem: number): void {
-    this.$store.dispatch("schedule/switchToSemester", sem);
+    this.$store.dispatch("updateTerm", sem);
   }
 
   get currentSemester(): number {

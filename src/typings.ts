@@ -24,7 +24,7 @@ export interface CourseSection {
   credMax: number;
 
   cap: number;
-  rem: number;
+  act: number;
   wlCap: number;
   wlAct: number;
   xlCap: number;

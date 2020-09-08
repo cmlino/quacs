@@ -12,12 +12,12 @@ const routes: Array<RouteConfig> = [
   },
   {
     path: "/department/:code",
-    component: () => import("../views/Department.vue"),
+    component: () => import("@/views/Department.vue"),
     props: true,
   },
   {
     path: "/schedule",
-    component: () => import("../views/Schedule.vue"),
+    component: () => import("@/views/Schedule.vue"),
   },
   {
     path: "/search",
@@ -25,7 +25,7 @@ const routes: Array<RouteConfig> = [
   },
   {
     path: "/prerequisites",
-    component: () => import("../views/Prerequisites.vue"),
+    component: () => import("@/views/Prerequisites.vue"),
   },
 ];
 

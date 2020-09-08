@@ -118,3 +118,5 @@ package.json
 *.ts
 *.js
 *.wasm
+
+semesters.json

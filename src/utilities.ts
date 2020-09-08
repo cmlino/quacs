@@ -84,7 +84,7 @@ export function formatTimeslot() {
 
 export function formatCourseSize() {
   return (section: CourseSection): string =>
-    section.rem + "/" + section.cap + " seats available";
+    section.act + "/" + section.cap + " seats available";
 }
 
 export function minuteTimeToHour(
@@ -219,10 +219,12 @@ export function formatPrerequisites() {
       return "";
     }
 
-    if ("prerequisites" in store.state.prerequisitesData[crn]) {
+    if (
+      crn in store.state.prerequisitesData &&
+      "prerequisites" in store.state.prerequisitesData[crn]
+    ) {
       return getPrerequisiteFormatHtml(
         store.getters["prerequisites/getPriorCourses"](),
-        // @ts-expect-error: I check that this exists already so we can ignore typescript
         store.state.prerequisitesData[crn].prerequisites
       );
     } else {
